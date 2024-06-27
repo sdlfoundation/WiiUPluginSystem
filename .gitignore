@@ -29,5 +29,5 @@ debug/
 *.cbp
 lib/
 cmake-build-debug/
-CMakeLists.txt
 _site/
+/build

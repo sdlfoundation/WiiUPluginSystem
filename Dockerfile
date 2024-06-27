@@ -1,9 +1,21 @@
-FROM ghcr.io/wiiu-env/devkitppc:20240505
+FROM devkitpro/devkitppc
 
-WORKDIR tmp_build
+ENV DKP /opt/devkitpro
+ENV PACMAN /opt/devkitpro/pacman/bin/pacman
+ENV CMAKE /opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake
+
+WORKDIR /project
+
+RUN apt-get update && \
+    apt-get install -y python3-pip libquadmath0 libquadmath0-ppc64el-cross gcc && \
+    pip install cmake --upgrade && \
+	${PACMAN} --noconfirm -Syu && \
+	${PACMAN} --noconfirm -S wiiu-dev wut && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives /tmp/* /var/tmp/*
+
 COPY . .
-RUN make clean && make && mkdir -p /artifacts/wups && cp -r lib /artifacts/wups && cp -r include /artifacts/wups && cp -r share /artifacts/wups
-WORKDIR /artifacts
 
-FROM scratch
-COPY --from=0 /artifacts /artifacts
+CMD export PATH=/opt/devkitpro/portlibs/wiiu/bin:$PATH && \
+	cd /project/build && \
+	powerpc-eabi-cmake .. && \
+    make -j8
